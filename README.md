@@ -5,6 +5,45 @@ Useful if you have a large number of sites on your local development machine and
 
 Particularly useful for Sitecore 9 sites where you have multiple IIS AppPools, websites, and Services (solr) to manage. Now you can easily turn sites off an on quickly.
 
+## Configuration
+
+Site list is configured in the `config.json` file:
+
+```javascript
+{  
+  "sites": [
+    {
+      "name": "mysite1",
+      "appPools": [
+        "mysite1"
+      ],
+      "websites": [
+        "mysite1"
+      ],
+      "services": [
+        "solr-mysite1"
+      ]
+    },
+    {
+      "name": "mysite2",
+      "appPools": [
+        "mysite2.identityserver",
+        "mysite2.verndale-local.com",
+        "mysite2.xconnect"
+      ],
+      "websites": [
+        "mysite2.identityserver",
+        "mysite2.verndale-local.com",
+        "mysite2.xconnect"
+      ],
+      "services": [
+        "solr-mysite2-9004"
+      ]
+    }
+  ]
+}
+```
+
 ## Usage Examples
 
 `EasyIIS.exe`  
