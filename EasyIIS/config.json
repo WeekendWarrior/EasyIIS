@@ -1,0 +1,32 @@
+{
+  "sites": [
+    {
+      "name": "mysite1",
+      "appPools": [
+        "mysite1"
+      ],
+      "websites": [
+        "mysite1"
+      ],
+      "services": [
+        "solr-mysite1"
+      ]
+    },
+    {
+      "name": "mysite2",
+      "appPools": [
+        "mysite2.identityserver",
+        "mysite2.verndale-local.com",
+        "mysite2.xconnect"
+      ],
+      "websites": [
+        "mysite2.identityserver",
+        "mysite2.verndale-local.com",
+        "mysite2.xconnect"
+      ],
+      "services": [
+        "solr-mysite2-9004"
+      ]
+    }
+  ]
+}
