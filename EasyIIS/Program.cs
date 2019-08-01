@@ -12,14 +12,18 @@ using System.Configuration;
 
 namespace EasyIIS
 {
+    /*
+     * Command line examples:  
+     * EasyIIS.exe <no arguments> = shows help
+     * EasyIIS.exe status
+     * EasyIIS.exe up --site="mysite"
+     * EasyIIS.exe down --site="mysite"
+     * EasyIIS.exe allup
+     * EasyIIS.exe alldown
+     */
+
     /// <summary>
     /// Simple command line tool to automate turning on IIS appPools and websites, and any related windows services.
-    /// Usage:
-    /// EasyIIS.exe (default / no command line parameters) = all on.
-    /// EasyIIS.exe all up = (turns all appPool, website and all services off)
-    /// EasyIIS.exe all down = (turns all appPool, website and services off)
-    /// EasyIIS.exe mysite up (turns specific site appPool, website and services on)
-    /// EasyIIS.exe mysite down (turns specific site appPool, website and services off)
     /// </summary>
     public static class Program
     {
@@ -53,24 +57,14 @@ namespace EasyIIS
             SiteConfiguration siteConfig = LoadSiteConfiguration();
 
             // Load the command line arguments and process accordingly.
-
-            /*
-             * Examples:  
-             * EasyIIS.exe status
-             * EasyIIS.exe up --site="mysite"
-             * EasyIIS.exe down --site="mysite"
-             * EasyIIS.exe allup
-             * EasyIIS.exe alldown
-             */
-
             // https://github.com/commandlineparser/commandline
             Parser.Default.ParseArguments<StatusOption, UpOption, DownOption, AllUpOption, AllDownOption>(args)
                 .MapResult(
                     (StatusOption opts) => RenderStatus(siteConfig),
                     (UpOption opts) => ProcessSite(siteConfig, opts.SiteName, true),
                     (DownOption opts) => ProcessSite(siteConfig, opts.SiteName, false),
-                    (AllUpOption opts) => PerformAll(siteConfig, true),
-                    (AllDownOption opts) => PerformAll(siteConfig, false),
+                    (AllUpOption opts) => ProcessAllSites(siteConfig, true),
+                    (AllDownOption opts) => ProcessAllSites(siteConfig, false),
                     errs => 1
                 );
         }
@@ -133,7 +127,7 @@ namespace EasyIIS
         /// <summary>
         /// Processes all sites.
         /// </summary>
-        private static int PerformAll(SiteConfiguration siteConfig, bool up)
+        private static int ProcessAllSites(SiteConfiguration siteConfig, bool up)
         {
             foreach (Models.Site site in siteConfig.Sites)
             {
