@@ -69,8 +69,8 @@ _(turns all appPool, website and services off)_
 `EasyIIS.exe alldown`  
 _(turns all appPool, website and services off)_
 
-`EasyIIS.exe up --site="mysite`  
+`EasyIIS.exe up --site="mysite"`  
 _(turns specific site appPool, website and services on)_
 
-`EasyIIS.exe down --site="mysite`  
+`EasyIIS.exe down --site="mysite"`  
 _(turns specific site appPool, website and services off)_
