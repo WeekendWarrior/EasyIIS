@@ -58,16 +58,19 @@ So in this example, you would simply add a user path variable to the folder `C:\
 _Note: Including the .exe is optional, it is present here for demonstration purposes._ 
 
 `EasyIIS.exe`  
-_(default / no command line parameters) = all on._
+_(default / no command line parameters) = shows help / available commands._
 
-`EasyIIS.exe all up`  
-_(turns all appPool, website and all services off)_
+`EasyIIS.exe status`  
+_(shows the status of all configured appPools, websites and services)_
 
-`EasyIIS.exe all down`  
+`EasyIIS.exe allup`  
 _(turns all appPool, website and services off)_
 
-`EasyIIS.exe mysite up`  
+`EasyIIS.exe alldown`  
+_(turns all appPool, website and services off)_
+
+`EasyIIS.exe up --site="mysite"`  
 _(turns specific site appPool, website and services on)_
 
-`EasyIIS.exe mysite down`  
+`EasyIIS.exe down --site="mysite"`  
 _(turns specific site appPool, website and services off)_
