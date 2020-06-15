@@ -27,22 +27,22 @@ namespace EasyIIS
     /// </summary>
     public static class Program
     {
-        private static readonly ILog _log;
+        private static readonly ILog Log;
 
-        private static ServerManager _serverManager;
+        private static readonly ServerManager ServerManager;
 
-        private static ServiceController[] _services;
+        private static readonly ServiceController[] Services;
 
         /// <summary>
         /// Static constructor for <see cref="Program"/>.
         /// </summary>
         static Program()
         {
-            _log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+            Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-            _serverManager = new ServerManager();
+            ServerManager = new ServerManager();
 
-            _services = ServiceController.GetServices();
+            Services = ServiceController.GetServices();
         }
        
         /// <summary>
@@ -54,7 +54,7 @@ namespace EasyIIS
             AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
             
             // Load the configuration from JSON file.
-            SiteConfiguration siteConfig = LoadSiteConfiguration();
+            var siteConfig = LoadSiteConfiguration();
 
             // Load the command line arguments and process accordingly.
             // https://github.com/commandlineparser/commandline
@@ -76,22 +76,22 @@ namespace EasyIIS
         /// </summary>
         private static int RenderStatus(SiteConfiguration siteConfig)
         {
-            foreach (Models.Site site in siteConfig.Sites)
+            foreach (var site in siteConfig.Sites)
             {
                 // App Pools
-                foreach (string appPoolName in site.AppPools)
+                foreach (var appPoolName in site.AppPools)
                 {
                     RenderAppPoolStatus(appPoolName);
                 }
 
                 // Websites
-                foreach (string websiteName in site.Websites)
+                foreach (var websiteName in site.Websites)
                 {
                     RenderWebsiteStatus(websiteName);
                 }
 
                 // Services
-                foreach (string serviceName in site.Services)
+                foreach (var serviceName in site.Services)
                 {
                     RenderServiceStatus(serviceName);
                 }
@@ -106,11 +106,11 @@ namespace EasyIIS
         private static int ProcessSite(SiteConfiguration siteConfig, string siteName, bool up)
         {
             // Load the site config.
-            Models.Site site = siteConfig.Sites.FirstOrDefault(s => s.SiteName.Equals(siteName));
+            var site = siteConfig.Sites.FirstOrDefault(s => s.SiteName.Equals(siteName));
 
             if (site == null)
             {
-                _log.WarnFormat("Could not find configured siteName '{0}'.", siteName);
+                Log.WarnFormat("Could not find configured siteName '{0}'.", siteName);
 
                 return 1;
             }
@@ -129,13 +129,20 @@ namespace EasyIIS
         /// </summary>
         private static int ProcessAllSites(SiteConfiguration siteConfig, bool up)
         {
-            foreach (Models.Site site in siteConfig.Sites)
+            var firstRun = true;
+
+            foreach (var site in siteConfig.Sites)
             {
+                // Render a new line into the log to visually break up the logs between each site.
+                if (!firstRun) Log.Info(Environment.NewLine);
+
                 ProcessAppPools(site, up);
 
                 ProcessWebsites(site, up);
 
                 ProcessServices(site, up);
+
+                firstRun = false;
             }
 
             return 0;
@@ -146,9 +153,9 @@ namespace EasyIIS
         /// </summary>
         private static void ProcessAppPools(Models.Site site, bool up)
         {
-            foreach (string appPoolName in site.AppPools)
+            foreach (var appPoolName in site.AppPools)
             {
-                ApplicationPool appPool = _serverManager.ApplicationPools[appPoolName];                
+                var appPool = ServerManager.ApplicationPools[appPoolName];                
 
                 if (appPool == null)
                 {
@@ -160,12 +167,12 @@ namespace EasyIIS
                 {
                     if (!new[] { ObjectState.Started, ObjectState.Starting }.Contains(appPool.State))
                     {
-                        _log.InfoFormat("Starting AppPool '{0}'.", appPool.Name);
+                        Log.InfoFormat("Starting AppPool '{0}'.", appPool.Name);
                         appPool.Start();
                     }
                     else
                     {
-                        _log.InfoFormat("AppPool '{0}' is already {1}.", appPool.Name, appPool.State);
+                        Log.InfoFormat("AppPool '{0}' is already {1}.", appPool.Name, appPool.State);
                     }
                 }
                 else
@@ -173,12 +180,12 @@ namespace EasyIIS
                     // Stop the app pool.
                     if (!new[] { ObjectState.Stopping, ObjectState.Stopped }.Contains(appPool.State))
                     {
-                        _log.InfoFormat("Stopping AppPool '{0}'.", appPool.Name);
+                        Log.InfoFormat("Stopping AppPool '{0}'.", appPool.Name);
                         appPool.Stop();
                     }
                     else
                     {
-                        _log.InfoFormat("AppPool '{0}' is already {1}.", appPool.Name, appPool.State);
+                        Log.InfoFormat("AppPool '{0}' is already {1}.", appPool.Name, appPool.State);
                     }
                 }
             }
@@ -189,9 +196,9 @@ namespace EasyIIS
         /// </summary>
         private static void ProcessWebsites(Models.Site site, bool up)
         {
-            foreach (string websiteName in site.Websites)
+            foreach (var websiteName in site.Websites)
             {
-                var iisWebsite = _serverManager.Sites[websiteName];
+                var iisWebsite = ServerManager.Sites[websiteName];
 
                 if (iisWebsite == null)
                 {
@@ -203,12 +210,12 @@ namespace EasyIIS
                 {
                     if (!new[] { ObjectState.Started, ObjectState.Starting }.Contains(iisWebsite.State))
                     {
-                        _log.InfoFormat("Starting Website '{0}'", iisWebsite.Name);
+                        Log.InfoFormat("Starting Website '{0}'", iisWebsite.Name);
                         iisWebsite.Start();
                     }
                     else
                     {
-                        _log.InfoFormat("Website '{0}' is already {1}.", iisWebsite.Name, iisWebsite.State);
+                        Log.InfoFormat("Website '{0}' is already {1}.", iisWebsite.Name, iisWebsite.State);
                     }
                 }
                 else
@@ -216,12 +223,12 @@ namespace EasyIIS
                     // Stop the website.
                     if (!new[] { ObjectState.Stopping, ObjectState.Stopped }.Contains(iisWebsite.State))
                     {
-                        _log.InfoFormat("Stopping Website '{0}'", iisWebsite.Name);
+                        Log.InfoFormat("Stopping Website '{0}'", iisWebsite.Name);
                         iisWebsite.Stop();
                     }
                     else
                     {
-                        _log.InfoFormat("Website '{0}' is already {1}.", iisWebsite.Name, iisWebsite.State);
+                        Log.InfoFormat("Website '{0}' is already {1}.", iisWebsite.Name, iisWebsite.State);
                     }
                 }
             }
@@ -232,9 +239,9 @@ namespace EasyIIS
         /// </summary>
         private static void ProcessServices(Models.Site site, bool up)
         {
-            foreach (string serviceName in site.Services)
+            foreach (var serviceName in site.Services)
             {
-                ServiceController service = _services.FirstOrDefault(s => s.ServiceName.Equals(serviceName, StringComparison.InvariantCultureIgnoreCase));
+                var service = Services.FirstOrDefault(s => s.ServiceName.Equals(serviceName, StringComparison.InvariantCultureIgnoreCase));
 
                 if (service == null)
                 {
@@ -244,27 +251,42 @@ namespace EasyIIS
                 // Start the service.
                 if (up)
                 {
-                    if (up && service.Status != ServiceControllerStatus.Running)
+                    if (!new[] {ServiceControllerStatus.Running, ServiceControllerStatus.StartPending }.Contains(service.Status))
                     {
-                        _log.InfoFormat("Starting Service '{0}'", service.ServiceName);
-                        service.Start();
+                        try
+                        {
+                            service.Start();
+                            Log.InfoFormat("Starting Service '{0}'", service.ServiceName);
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            Log.InfoFormat("Cannot start Service '{0}': Reason: '{1}'.\r\n\t--> Was this service started already in this run?", service.ServiceName, ex.Message);
+                        }
                     }
                     else
                     {
-                        _log.InfoFormat("Service '{0}' is already {1}.", service.ServiceName, service.Status);
+                        Log.InfoFormat("Service '{0}' is already {1}.", service.ServiceName, service.Status);
                     }
                 }
                 else
                 {
                     // Stop the service.
-                    if (!up && service.Status != ServiceControllerStatus.Stopped)
+                    if (!new[]{ ServiceControllerStatus.Stopped, ServiceControllerStatus.StopPending }.Contains(service.Status))
                     {
-                        _log.InfoFormat("Stopping Service '{0}'", service.ServiceName);
-                        service.Stop();
+                        // System.InvalidOperationException: Cannot stop MongoDB 3.4 service on computer '.'. ---> System.ComponentModel.Win32Exception: The service has not been started
+                        try
+                        {
+                            service.Stop();
+                            Log.InfoFormat("Stopping Service '{0}'", service.ServiceName);
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            Log.InfoFormat("Cannot stop Service '{0}': Reason: '{1}'.\r\n\t--> Was this service stopped already in this run?", service.ServiceName, ex.Message);
+                        }
                     }
                     else
                     {
-                        _log.InfoFormat("Service '{0}' is already {1}.", service.ServiceName, service.Status);
+                        Log.InfoFormat("Service '{0}' is already {1}.", service.ServiceName, service.Status);
                     }
                 }
             }
@@ -275,13 +297,18 @@ namespace EasyIIS
         /// </summary>
         private static SiteConfiguration LoadSiteConfiguration()
         {
-            string workingDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var workingDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-            string configFileName = ConfigurationManager.AppSettings["configFileName"];
+            if (workingDir == null)
+            {
+                throw new ApplicationException("Could not determine working directory of EasyIIS executable.");
+            }
 
-            string configFilePath = Path.Combine(workingDir, configFileName);
+            var configFileName = ConfigurationManager.AppSettings["configFileName"];
 
-            string rawJson = File.ReadAllText(configFilePath);
+            var configFilePath = Path.Combine(workingDir, configFileName);
+
+            var rawJson = File.ReadAllText(configFilePath);
 
             return JsonConvert.DeserializeObject<SiteConfiguration>(rawJson);
         }
@@ -291,14 +318,14 @@ namespace EasyIIS
         /// </summary>
         private static void RenderAppPoolStatus(string appPoolName)
         {
-            ApplicationPool appPool = _serverManager.ApplicationPools[appPoolName];
+            var appPool = ServerManager.ApplicationPools[appPoolName];
             if (appPool != null)
             {
-                _log.InfoFormat("AppPool '{0}': {1}", appPool.Name, appPool.State);
+                Log.InfoFormat("AppPool '{0}': {1}", appPool.Name, appPool.State);
             }
             else
             {
-                _log.WarnFormat("AppPool '{0}': NOTFOUND", appPoolName);
+                Log.WarnFormat("AppPool '{0}': NOTFOUND", appPoolName);
             }
         }
 
@@ -307,15 +334,15 @@ namespace EasyIIS
         /// </summary>
         private static void RenderWebsiteStatus(string websiteName)
         {
-            var iisWebsite = _serverManager.Sites[websiteName];
+            var iisWebsite = ServerManager.Sites[websiteName];
 
             if (iisWebsite != null)
             {
-                _log.InfoFormat("Website '{0}': {1}", iisWebsite.Name, iisWebsite.State);
+                Log.InfoFormat("Website '{0}': {1}", iisWebsite.Name, iisWebsite.State);
             }
             else
             {
-                _log.WarnFormat("Website '{0}': NOTFOUND", websiteName);
+                Log.WarnFormat("Website '{0}': NOTFOUND", websiteName);
             }
         }
 
@@ -325,15 +352,15 @@ namespace EasyIIS
         /// </summary>
         private static void RenderServiceStatus(string serviceName)
         {
-            ServiceController service = _services.FirstOrDefault(s => s.ServiceName.Equals(serviceName, StringComparison.InvariantCultureIgnoreCase));
+            var service = Services.FirstOrDefault(s => s.ServiceName.Equals(serviceName, StringComparison.InvariantCultureIgnoreCase));
 
             if (service != null)
             {
-                _log.InfoFormat("Service '{0}': {1}", service.ServiceName, service.Status);
+                Log.InfoFormat("Service '{0}': {1}", service.ServiceName, service.Status);
             }
             else
             {
-                _log.WarnFormat("Service '{0}': NOTFOUND", serviceName);
+                Log.WarnFormat("Service '{0}': NOTFOUND", serviceName);
             }
         }
 
@@ -342,7 +369,7 @@ namespace EasyIIS
         /// </summary>
         private static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
         {
-            _log.Fatal("Uncaught Exception", (Exception)e.ExceptionObject);
+            Log.Fatal("Uncaught Exception", (Exception)e.ExceptionObject);
         }
 
         #endregion
