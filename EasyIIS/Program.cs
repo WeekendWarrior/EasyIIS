@@ -9,6 +9,7 @@ using System.Reflection;
 using System.ServiceProcess;
 using CommandLine;
 using System.Configuration;
+using System.Runtime.InteropServices;
 
 namespace EasyIIS
 {
@@ -167,8 +168,15 @@ namespace EasyIIS
                 {
                     if (!new[] { ObjectState.Started, ObjectState.Starting }.Contains(appPool.State))
                     {
-                        Log.InfoFormat("Starting AppPool '{0}'.", appPool.Name);
-                        appPool.Start();
+                        try
+                        {
+                            appPool.Start();
+                            Log.InfoFormat("Starting AppPool '{0}'.", appPool.Name);
+                        }
+                        catch (COMException ex)
+                        {
+                            Log.WarnFormat("Cannot start AppPool '{0}': Reason: '{1}'.\r\n\t--> Was this AppPool recently stopped?", appPool.Name, ex.Message);
+                        }
                     }
                     else
                     {
@@ -180,8 +188,15 @@ namespace EasyIIS
                     // Stop the app pool.
                     if (!new[] { ObjectState.Stopping, ObjectState.Stopped }.Contains(appPool.State))
                     {
-                        Log.InfoFormat("Stopping AppPool '{0}'.", appPool.Name);
-                        appPool.Stop();
+                        try
+                        {
+                            appPool.Stop();
+                            Log.InfoFormat("Stopping AppPool '{0}'.", appPool.Name);
+                        }
+                        catch (COMException ex)
+                        {
+                            Log.WarnFormat("Cannot stop AppPool '{0}': Reason: '{1}'.\r\n\t--> Was this AppPool recently started?", appPool.Name, ex.Message);
+                        }
                     }
                     else
                     {
@@ -260,7 +275,7 @@ namespace EasyIIS
                         }
                         catch (InvalidOperationException ex)
                         {
-                            Log.InfoFormat("Cannot start Service '{0}': Reason: '{1}'.\r\n\t--> Was this service started already in this run?", service.ServiceName, ex.Message);
+                            Log.WarnFormat("Cannot start Service '{0}': Reason: '{1}'.\r\n\t--> Was this service started already in this run?", service.ServiceName, ex.Message);
                         }
                     }
                     else
@@ -281,7 +296,7 @@ namespace EasyIIS
                         }
                         catch (InvalidOperationException ex)
                         {
-                            Log.InfoFormat("Cannot stop Service '{0}': Reason: '{1}'.\r\n\t--> Was this service stopped already in this run?", service.ServiceName, ex.Message);
+                            Log.WarnFormat("Cannot stop Service '{0}': Reason: '{1}'.\r\n\t--> Was this service stopped already in this run?", service.ServiceName, ex.Message);
                         }
                     }
                     else
