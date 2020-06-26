@@ -23,6 +23,9 @@ namespace EasyIIS.Models
 
         [JsonProperty("services")]
         public string[] Services { get; set; }
+
+        [JsonProperty("warm")]
+        public string[] Warm { get; set; }
     }
 
 }

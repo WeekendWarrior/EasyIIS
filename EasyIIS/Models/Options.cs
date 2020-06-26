@@ -2,7 +2,7 @@
 
 namespace EasyIIS.Models
 {
-    [Verb("status", HelpText ="Displayes the current status of all sites and services.")]
+    [Verb("status", HelpText ="Displays the current status of all sites and services.")]
     public class StatusOption
     {
         [Option(HelpText = "true to bring the site / services up, otherwise down is assumed.")]

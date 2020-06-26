@@ -10,6 +10,9 @@
       ],
       "services": [
         "solr-mysite1"
+      ],
+      "warm": [
+        "http://localhost"
       ]
     },
     {
@@ -26,7 +29,8 @@
       ],
       "services": [
         "solr-mysite2-9004"
-      ]
+      ],
+      "warm": [] 
     }
   ]
 }

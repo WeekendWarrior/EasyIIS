@@ -1,15 +1,17 @@
-﻿using EasyIIS.Models;
+﻿using CommandLine;
+using EasyIIS.Models;
 using log4net;
 using Microsoft.Web.Administration;
 using Newtonsoft.Json;
 using System;
+using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
-using System.ServiceProcess;
-using CommandLine;
-using System.Configuration;
 using System.Runtime.InteropServices;
+using System.ServiceProcess;
+using System.Threading.Tasks;
 
 namespace EasyIIS
 {
@@ -122,6 +124,11 @@ namespace EasyIIS
 
             ProcessServices(site, up);
 
+            if (up)
+            {
+                ProcessWarm(site);
+            }
+
             return 0;
         }
 
@@ -142,6 +149,11 @@ namespace EasyIIS
                 ProcessWebsites(site, up);
 
                 ProcessServices(site, up);
+
+                if (up)
+                {
+                    ProcessWarm(site);
+                }
 
                 firstRun = false;
             }
@@ -305,6 +317,37 @@ namespace EasyIIS
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Warms the websites.
+        /// </summary>
+        private static void ProcessWarm(Models.Site site)
+        {
+            if (site.Warm == null || site.Warm.Length == 0) return;
+
+            foreach (var url in site.Warm)
+            {
+                WarmUrl(url);
+
+                Log.InfoFormat("Warming url '{0}'", url);
+            }
+        }
+
+        /// <summary>
+        /// Fire and forget "Warms" a url by sending an http request to it.
+        /// </summary>
+        private static void WarmUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return;
+
+            Task.Factory.StartNew(async () =>
+            {
+                using (var client = new HttpClient())
+                {
+                    await client.PostAsync(url, new StringContent(""));
+                }
+            });
         }
 
         /// <summary>
