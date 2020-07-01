@@ -3,7 +3,7 @@ Simple windows command line tool to automate turning on IIS appPools and website
 
 Useful if you have a large number of sites on your local development machine and you want a quick way to turn on/off quickly without having to click around in the IIS and services UI.
 
-Particularly useful for Sitecore 9 sites where you have multiple IIS AppPools (website, identityserver, xconnect), and services (solr, SQL, mongoDb) to manage. With this tool, you can easily group these together as a "site" and turn the entire group on/off via the command line/bash. Or you can turn ALL sites on and off.
+Particularly useful for Sitecore 9 sites where you have multiple IIS AppPools (website, identityserver, xconnect), and services (solr, SQL, mongoDb) to manage. With this tool, you can easily group these together as a "site" and turn the entire group on/off via the command line/bash. Or you can turn ALL sites on and off. And when you turn on / "up" a site, you can also pre-warm the url to decrease your first load time to get you coding faster.
 
 ## Configuration
 
@@ -22,6 +22,9 @@ Site list is configured in the `config.json` file:
       ],
       "services": [
         "solr-mysite1"
+      ],
+      "warm": [
+        "http://localhost"
       ]
     },
     {
@@ -38,6 +41,10 @@ Site list is configured in the `config.json` file:
       ],
       "services": [
         "solr-mysite2-9004"
+      ],
+      "warm": [
+        "http://localhost.mysite2",
+        "http://local.solr"
       ]
     }
   ]
